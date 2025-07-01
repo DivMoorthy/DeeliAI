@@ -18,6 +18,11 @@ class Main(API):
         result = Playwright.scrape_metric(self.name, metric)
         return result or self.defaultVal(metric)
     
+    #unique company number that they file under with the SEC
+    
+    @staticmethod
+    def getCIK(ticker):
+        return API.ask_LLM("What is " + ticker + "'s cik, returned as just a number no text")
     
     #default value filling operation, currently only supports an LLM prediction
     #future implementations can pull data from similar profile companies 

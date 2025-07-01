@@ -2,6 +2,7 @@ from playwright.sync_api import sync_playwright
 from bs4 import BeautifulSoup
 import re
 import time
+import urllib.parse
 
 class Playwright:
     @staticmethod
@@ -76,6 +77,37 @@ class Playwright:
                 return matches[0]
 
             return "Profit margin not found."
-   
         
-    
+    @staticmethod
+    def search(prompt, headless=False):
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=headless)
+            page = browser.new_page()
+
+            # Search DuckDuckGo
+            search_url = f"https://duckduckgo.com/?q={prompt.replace(' ', '+')}"
+            page.goto(search_url)
+            time.sleep(2)
+
+            # Get the first search result link
+            first_link = page.locator("a.result__a").first
+            url = first_link.get_attribute("href")
+            if not url:
+                browser.close()
+                return "No search results found."
+
+            # Go to the first link
+            page.goto(url)
+            page.wait_for_load_state('load')
+
+            # Get page text content
+            text = page.inner_text("body")
+
+            browser.close()
+
+            # Simple regex for numbers with optional $ and commas/decimals
+            match = re.search(r'\$?[\d,]+(?:\.\d+)?(?:\s?(million|billion|trillion|M|B|T))?', text, re.IGNORECASE)
+            if match:
+                return match.group(0)
+            else:
+                return "No numerical data found."

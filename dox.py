@@ -2,7 +2,6 @@ from playwright.sync_api import sync_playwright, TimeoutError
 import os
 import re
 
-
 class Documents:
     def dismiss_popups(page):
         popup_selectors = [
@@ -13,8 +12,7 @@ class Documents:
         ]
         for selector in popup_selectors:
             try:
-                page.wait_for_selector(selector, timeout=2000)
-                page.locator(selector).click()
+                page.locator(selector).click(timeout=2000)
                 print(f"Dismissed popup: {selector}")
             except:
                 pass
@@ -24,84 +22,85 @@ class Documents:
         cik_padded = cik.zfill(10)
 
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=headless, slow_mo=100)
+            browser = p.chromium.launch(headless=headless, slow_mo=50)
             page = browser.new_page()
 
-            # 1. Navigate to company CIK page
             base_url = f"https://www.sec.gov/edgar/browse/?CIK={cik_padded}"
             print(f"🔍 Navigating to {base_url}")
-            page.goto(base_url)
+            page.goto(base_url, timeout=60000)
             Documents.dismiss_popups(page)
 
-            # 2. Click the "View Filings" button
             try:
-                page.wait_for_selector('a[data-testid="view-filings-tab"]', timeout=10000)
-                page.locator('a[data-testid="view-filings-tab"]').click()
-                print("✅ Clicked 'View Filings' tab.")
-            except TimeoutError:
+                if page.locator('a[data-testid="view-filings-tab"]').is_visible():
+                    page.locator('a[data-testid="view-filings-tab"]').click()
+                else:
+                    page.get_by_text("View Filings").click()
+                print("✅ Clicked 'View Filings'.")
+            except Exception as e:
                 browser.close()
-                return "❌ 'View Filings' tab not found or not clickable."
-            
+                return f"❌ Failed to click 'View Filings': {e}"
+
             page.wait_for_load_state("networkidle")
             page.wait_for_timeout(3000)
 
-            # 3. Try to apply filter: "Annual and Quarterly Reports"
             try:
-                filter_button = page.locator('button[data-testid="filter-button"]')
-                if filter_button.is_visible():
-                    filter_button.click()
-                    page.wait_for_selector('ul[role="listbox"] li', timeout=5000)
-                    page.locator('ul[role="listbox"] li', has_text="Annual and Quarterly Reports").first.click()
-                    print("✅ Filter applied: Annual and Quarterly Reports")
-                    page.wait_for_load_state("networkidle")
-                    page.wait_for_timeout(2000)
-            except Exception as e:
-                print(f"⚠️  Filter not applied: {e}")
+                search_input = page.locator('input[placeholder="Search table"]')
+                search_input.fill("10-K")
+                print("✅ Entered '10-K' in search table.")
+                page.wait_for_timeout(2000)
 
-            # 4. Wait for filings list
-            try:
-                page.wait_for_selector('[data-testid="filing-row"]', timeout=15000)
-            except TimeoutError:
+                first_row = page.locator('[data-testid="filing-row"]').first
+                first_row.wait_for(timeout=15000)
+                print("✅ Found first filtered filing row.")
+            except:
                 browser.close()
-                return "❌ No filings found or page took too long to load."
+                return "❌ No filings found after searching for 10-K."
 
-            filings = page.locator('[data-testid="filing-row"]')
-            if filings.count() == 0:
-                browser.close()
-                return "❌ No filings listed."
+            first_row.locator('a[data-testid="filing-details-link"]').click()
 
-            print("✅ Filings loaded. Proceeding...")
-
-            # 5. Click first filing detail link
-            filings.nth(0).locator('a[data-testid="filing-details-link"]').click()
-
-            # 6. Wait for document links
-            try:
-                page.wait_for_selector('a[data-testid="document-link"]', timeout=10000)
-            except TimeoutError:
-                browser.close()
-                return "❌ No document links found on filing detail page."
-
-            doc_link = page.locator('a[data-testid="document-link"]').first.get_attribute("href")
-            if not doc_link:
-                browser.close()
-                return "❌ No document link found."
-
-            if not doc_link.startswith("https://"):
-                doc_link = "https://www.sec.gov" + doc_link
-
-            # 7. Navigate to document and download content
-            page.goto(doc_link)
+            page.wait_for_load_state("networkidle")
             Documents.dismiss_popups(page)
 
-            content = page.content()
-            safe_cik = re.sub(r'\W+', '_', cik_padded)
-            filename = os.path.join(download_folder, f"{safe_cik}_latest_10k.html")
-            with open(filename, "w", encoding="utf-8") as f:
-                f.write(content)
+            try:
+                page.wait_for_selector('table[data-testid="documents-table"]', timeout=10000)
+                doc_table = page.locator('table[data-testid="documents-table"]')
+                annual_report_link = doc_table.locator('a:has-text("Annual Report")').first
+                annual_report_link.wait_for(timeout=5000)
 
-            browser.close()
-            return f"✅ Report saved to {filename}"
+                doc_href = annual_report_link.get_attribute('href')
+                if not doc_href:
+                    browser.close()
+                    return "❌ No 'Annual Report' link found."
+                if not doc_href.startswith("https://"):
+                    doc_href = "https://www.sec.gov" + doc_href
 
+                print(f"🔗 Navigating to Annual Report: {doc_href}")
+                page.goto(doc_href)
+                Documents.dismiss_popups(page)
 
+                pdf_link = page.locator('a:has-text(".pdf")').first
+                pdf_href = pdf_link.get_attribute('href')
+                if not pdf_href:
+                    browser.close()
+                    return "❌ No PDF link found on Annual Report page."
+                if not pdf_href.startswith("https://"):
+                    pdf_href = "https://www.sec.gov" + pdf_href
 
+                print(f"🔗 Downloading PDF: {pdf_href}")
+                response = page.request.get(pdf_href)
+                if response.status != 200:
+                    browser.close()
+                    return "❌ Failed to download PDF document."
+
+                safe_cik = re.sub(r'\\W+', '_', cik_padded)
+                filename = os.path.join(download_folder, f"{safe_cik}_annual_report.pdf")
+                with open(filename, "wb") as f:
+                    f.write(response.body())
+
+                print(f"✅ Saved to {filename}")
+                browser.close()
+                return f"✅ Annual Report PDF saved to {filename}"
+
+            except Exception as e:
+                browser.close()
+                return f"❌ Error getting Annual Report PDF: {e}"

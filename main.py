@@ -31,14 +31,28 @@ class Main(API):
         Documents.getReport(cik, headless=False)
     
    
-    #default value filling operation, currently only supports an LLM prediction
+    #default value filling operation for qualitative data, currently only supports an LLM prediction
     #future implementations can pull data from similar profile companies 
 
-    def defaultVal(self, metric):
+    def defaultValQual(self, metric):
         val = self.ask_LLM(
             f"What is a reasonable value for the {metric} of a startup in the {self.industry} industry with a valuation of {self.valuation}"
         )
         return val
+    
+
+    # perform a similar search for the singular missing metric on a company with a similar profile 
+    def defaultValQual(self, metric):
+        name = self.ask_LLM(
+            f"Based on publically available data, what is a company in the " + {self.industry} + " with a valuation around " + {self.valuation} + " that would have a similar " + {metric} + " to " + {self.name} + " based on similar size, data and characteristic milestones?"
+        )
+        
+        compCIK = self.askLLM( f"What is the CIK for " + {name} + " ?")
+
+        Documents.getReport(compCIK)
+
+        #main call for whichever metric here 
+    
     
     
 

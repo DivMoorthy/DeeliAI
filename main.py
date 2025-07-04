@@ -1,6 +1,7 @@
 from api import API 
-from web_scrape import Playwright
 from metric import Metric
+from scrape import Scraper
+from dox import Documents
 
 class Main(API):
     def __init__(self, name, industry, valuation):
@@ -9,21 +10,27 @@ class Main(API):
         self.valuation = valuation
 
 
+ #unique company number that they file under with the SEC
+    
+    @staticmethod
+    def getCIK(ticker):
+        return API.ask_LLM("What is " + ticker + "'s cik, returned as just a number no text")
+    
+
 # LLM and playwright calling helper methods
 
     def ask_LLM(self, prompt):
         return API.ask_LLM(prompt)
 
     def scrape_metric(self, metric):
-        result = Playwright.scrape_metric(self.name, metric)
+        result = Scraper.get10kNum(self.name, metric)
         return result or self.defaultVal(metric)
     
-    #unique company number that they file under with the SEC
+    def downloadData(self):
+        cik = Main.getCIK(self.name)
+        Documents.getReport(cik, headless=False)
     
-    @staticmethod
-    def getCIK(ticker):
-        return API.ask_LLM("What is " + ticker + "'s cik, returned as just a number no text")
-    
+   
     #default value filling operation, currently only supports an LLM prediction
     #future implementations can pull data from similar profile companies 
 
@@ -40,19 +47,22 @@ class Main(API):
 
 
     def sizeVal(self):
-        TAM = self.scrape_metric("TAM") # call to playwright
+        pdfPath = Main.getCIK(self.name) + "_annual_report.pdf"
+        TAM = Scraper.scrape(pdfPath, "TAM") # call to scrape the downloaded 10k
         print(f"TAM: {TAM}")
         return Metric.getTAMMetric(TAM)
 
     def growthTrends(self):
-        CAGR = self.scrape_metric("CAGR") # call to playwright
+        pdfPath = Main.getCIK(self.name) + "_annual_report.pdf"
+        CAGR = Scraper.scrape(pdfPath, "CAGR") # call to scrape the downloaded 10k
         print(f"CAGR: {CAGR}") 
         return Metric.getCAGRMetric(CAGR)
     
     #experimental trial with specialized metric scraper rather than generalizable one
 
     def stratImp(self):
-        profit_margin = Playwright.scrape_10k_profit_margin(self.name)
+        pdfPath = Main.getCIK(self.name) + "_annual_report.pdf"
+        profit_margin = Scraper.scrape(pdfPath, "Profit Margin") # call to scrape the downloaded 10k
         print(f"Profit Margin for {self.name}: {profit_margin}")
         return Metric.getProfitMetric(profit_margin)
 

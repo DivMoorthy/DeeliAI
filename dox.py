@@ -58,19 +58,6 @@ class Documents:
                 print("✅ Typed and submitted '10-K' in search table.")
                 page.wait_for_timeout(3000)
 
-                # Wait for at least one row to appear after search
-                rows = page.locator('[data-testid="filing-row"]')
-                rows.first.wait_for(timeout=15000)
-
-
-
-
-
-
-                first_link = rows.first.locator('a[data-testid="filing-details-link"]')
-                first_link.wait_for(timeout=5000)
-                first_link.click()
-                print("✅ Clicked first 'Form Description' link after 10-K search.")
 
             except Exception as e:
                 browser.close()
@@ -79,50 +66,45 @@ class Documents:
             page.wait_for_load_state("networkidle")
             Documents.dismiss_popups(page)
 
-            try:
-                # Wait for documents table
-                page.wait_for_selector('table[data-testid="documents-table"]', timeout=10000)
 
-                # Look for the specific document title link
-                target_text = "Annual report [Section 13 and 15(d), not S-K Item 405]"
-                target_link = page.locator(f'a:has-text("{target_text}")').first
-                target_link.wait_for(timeout=5000)
+#tested and working up until this point 
 
-                doc_href = target_link.get_attribute('href')
-                if not doc_href:
-                    browser.close()
-                    return "❌ No matching 'Annual report' document link found."
-                if not doc_href.startswith("https://"):
-                    doc_href = "https://www.sec.gov" + doc_href
+        try:
+            # Click the first "Annual report" link
+            annual_report_link = page.locator('a:has-text("Annual report")').first
+            annual_report_link.wait_for(timeout=5000)
+            annual_report_href = annual_report_link.get_attribute('href')
 
-                print(f"🔗 Navigating to Annual Report Document: {doc_href}")
-                page.goto(doc_href)
+            if not annual_report_href:
+                result = "❌ No 'Annual report' link found."
+            else:
+                # Navigate to the Annual Report page
+                if not annual_report_href.startswith("https://"):
+                    annual_report_href = "https://www.sec.gov" + annual_report_href
+
+                print(f"🔗 Navigating to Annual Report: {annual_report_href}")
+                page.goto(annual_report_href)
+                page.wait_for_load_state("networkidle")
                 Documents.dismiss_popups(page)
 
-                # Find the first PDF link on that page
-                pdf_link = page.locator('a:has-text(".pdf")').first
-                pdf_href = pdf_link.get_attribute('href')
-                if not pdf_href:
-                    browser.close()
-                    return "❌ No PDF link found on Annual Report page."
-                if not pdf_href.startswith("https://"):
-                    pdf_href = "https://www.sec.gov" + pdf_href
+                # Save full HTML content of the page
+                html_content = page.content()
+                safe_cik = re.sub(r'\\W+', '_', cik_padded)
+                filename = os.path.join(download_folder, f"{safe_cik}_annual_report.html")
+                with open(filename, "w", encoding="utf-8") as f:
+                    f.write(html_content)
 
-                print(f"🔗 Downloading PDF: {pdf_href}")
-                response = page.request.get(pdf_href)
-                if response.status != 200:
-                    browser.close()
-                    return "❌ Failed to download PDF document."
+                print(f"✅ Saved HTML content to {filename}")
+                result = f"✅ HTML content saved to {filename}"
 
-                safe_cik = re.sub(r'\W+', '_', cik_padded)
-                filename = os.path.join(download_folder, f"{safe_cik}_annual_report.pdf")
-                with open(filename, "wb") as f:
-                    f.write(response.body())
+        except Exception as e:
+            print(f"❌ Error downloading Annual Report content: {e}")
+            result = f"❌ Error downloading Annual Report content: {e}"
 
-                print(f"✅ Saved to {filename}")
+        finally:
+            try:
                 browser.close()
-                return f"✅ Annual Report PDF saved to {filename}"
+            except Exception:
+                pass  # Avoid crashing if already closed
 
-            except Exception as e:
-                browser.close()
-                return f"❌ Error locating or downloading report: {e}"
+            return result

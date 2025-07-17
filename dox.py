@@ -90,6 +90,7 @@ class Documents:
 
                     # You can print or save it to a file
                     print(f"✅ Current URL: {current_url}")
+                    return current_url
 
             
             except Exception as e:
@@ -98,22 +99,3 @@ class Documents:
 
 
 
-"""
- # Save full HTML content of the page
-                html_content = page.content()
-                safe_cik = re.sub(r'\\W+', '_', cik_padded)
-                filename = os.path.join(download_folder, f"{safe_cik}_annual_report.html")
-                with open(filename, "w", encoding="utf-8") as f:
-                    f.write(html_content)
-
-                print(f"✅ Saved HTML content to {filename}")
-                result = f"✅ HTML content saved to {filename}"
-
-
-            except Exception as e:
-                print(f"❌ Error downloading Annual Report content: {e}")
-                result = f"❌ Error downloading Annual Report content: {e}"
-
-            return result
-
-"""

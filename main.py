@@ -1,7 +1,7 @@
 from api import API 
 from metric import Metric
-from scrape import Scraper
 from dox import Documents
+from getData import Data
 
 class Main(API):
     def __init__(self, name, industry, valuation):
@@ -22,13 +22,6 @@ class Main(API):
     def ask_LLM(self, prompt):
         return API.ask_LLM(prompt)
 
-    def scrape_metric(self, metric):
-        result = Scraper.get10kNum(self.name, metric)
-        return result or self.defaultVal(metric)
-    
-    def downloadData(self):
-        cik = Main.getCIK(self.name)
-        Documents.getReport(cik, headless=False)
     
    
     #default value filling operation for qualitative data, currently only supports an LLM prediction
@@ -60,23 +53,18 @@ class Main(API):
     #utilize the playwright API
 
 
-    def sizeVal(self):
-        pdfPath = Main.getCIK(self.name) + "_annual_report.pdf"
-        TAM = Scraper.scrape(pdfPath, "TAM") # call to scrape the downloaded 10k
+    def sizeVal(self, link):
+        TAM = Data.search_edgar_10k_viewer(link, "TAM")
         print(f"TAM: {TAM}")
         return Metric.getTAMMetric(TAM)
 
-    def growthTrends(self):
-        pdfPath = Main.getCIK(self.name) + "_annual_report.pdf"
-        CAGR = Scraper.scrape(pdfPath, "CAGR") # call to scrape the downloaded 10k
+    def growthTrends(self, link):
+        CAGR = Data.search_edgar_10k_viewer(link, "CAGR")
         print(f"CAGR: {CAGR}") 
         return Metric.getCAGRMetric(CAGR)
-    
-    #experimental trial with specialized metric scraper rather than generalizable one
 
-    def stratImp(self):
-        pdfPath = Main.getCIK(self.name) + "_annual_report.pdf"
-        profit_margin = Scraper.scrape(pdfPath, "Profit Margin") # call to scrape the downloaded 10k
+    def stratImp(self, link):
+        profit_margin = Data.search_edgar_10k_viewer(link, "Profit Margin")
         print(f"Profit Margin for {self.name}: {profit_margin}")
         return Metric.getProfitMetric(profit_margin)
 
@@ -117,16 +105,19 @@ class Main(API):
     
     # final score calculations done here
 
-    def finalScore(self):
+    def finalScore(self, link):
         print("Calculating Combined Investment Confidence Score...\n")
 
 
         #will be replaced with generalizable names when multiple metrics are introduced
         #written this way for clarity for now
 
-        tam_score = self.sizeVal()
-        cagr_score = self.growthTrends()
-        profit_score = self.stratImp()
+        #quant
+        tam_score = self.sizeVal(link)
+        cagr_score = self.growthTrends(link)
+        profit_score = self.stratImp(link)
+
+        #qual
         comp_score = self.compLand()
         reg_score = self.marketOpen()
         brand_score = self.intangibles()

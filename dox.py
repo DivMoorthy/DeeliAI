@@ -68,7 +68,32 @@ class Documents:
 
 
 #tested and working up until this point 
+        try:
+            # Locate and click the first "Annual report" link under "Form Description"
+            annual_report_link = page.locator('a', has_text="Annual report").first
+            annual_report_link.wait_for(timeout=5000)
+            href = annual_report_link.get_attribute('href')
 
+            if not href:
+                browser.close()
+                return "❌ No 'Annual report' link found."
+
+            # Navigate to the Annual Report page
+            page.goto(f"https://www.sec.gov{href}", timeout=60000)
+            print("✅ Navigated to Annual Report page.")
+
+        except Exception as e:
+            browser.close()
+            return f"❌ Failed to locate or click 'Annual report': {e}"
+
+
+
+
+
+
+
+
+"""
         try:
             # Click the first "Annual report" link
             annual_report_link = page.locator('a:has-text("Annual report")').first
@@ -108,3 +133,4 @@ class Documents:
                 pass  # Avoid crashing if already closed
 
             return result
+"""

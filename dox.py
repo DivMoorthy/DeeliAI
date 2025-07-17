@@ -85,6 +85,20 @@ class Documents:
                     page.goto(full_url, timeout=60000)
                     page.wait_for_timeout(5000)
 
+
+                    current_url = page.url
+
+                    # You can print or save it to a file
+                    print(f"✅ Current URL: {current_url}")
+
+            
+            except Exception as e:
+                print(f"❌ Error downloading Annual Report content: {e}")
+                result = f"❌ Error downloading Annual Report content: {e}"
+
+
+
+"""
  # Save full HTML content of the page
                 html_content = page.content()
                 safe_cik = re.sub(r'\\W+', '_', cik_padded)
@@ -101,3 +115,5 @@ class Documents:
                 result = f"❌ Error downloading Annual Report content: {e}"
 
             return result
+
+"""

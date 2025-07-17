@@ -21,4 +21,3 @@ from dox import Documents
 result = Documents.getReport("1045810", headless=False)
 print(result)
 
-

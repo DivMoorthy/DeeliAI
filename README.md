@@ -17,6 +17,7 @@ Technical issues faced include:
 1. fetching the documents after dowloading then and parsing throws an event loop closed error, and requirs a new call in order to function properly
 2. python playwright can't identify the table structure linking within the SEC filings as it is not pure HTML and requires link keyword recognition rather than a table position
 3. When fetchign the CIK, ensure that Gemini follows a specific format as written in to avoid potential naming issues with the pdf download later on
+4. When trying to directly download the information from the SEC webpage, the error "Not an EDGAR inline XBRL document viewing request, please check URL" is thrown not allowing us to view any info
 
 Other considerations:
 1. SEC filings are updates quarterly at best so the information from this program is only as recent as the data allows for

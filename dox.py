@@ -37,7 +37,6 @@ class Documents:
                     page.get_by_text("View Filings").click()
                 print("✅ Clicked 'View Filings'.")
             except Exception as e:
-                browser.close()
                 return f"❌ Failed to click 'View Filings': {e}"
 
             page.wait_for_load_state("networkidle")
@@ -60,7 +59,6 @@ class Documents:
 
 
             except Exception as e:
-                browser.close()
                 return f"❌ Error locating 10-K Form Description link: {e}"
 
             page.wait_for_load_state("networkidle")
@@ -68,23 +66,29 @@ class Documents:
 
 
 #tested and working up until this point 
-        try:
-            # Locate and click the first "Annual report" link under "Form Description"
-            annual_report_link = page.locator('a', has_text="Annual report").first
-            annual_report_link.wait_for(timeout=5000)
-            href = annual_report_link.get_attribute('href')
+        
+        # 4. Now click the first actual document link (class="document-link")
+        
+            try:
+                # Wait for at least one document link to appear
+                page.wait_for_selector('a.document-link', timeout=5000)
 
-            if not href:
-                browser.close()
-                return "❌ No 'Annual report' link found."
+                # Grab the first matching link safely
+                doc_link = page.locator('a.document-link').first
 
-            # Navigate to the Annual Report page
-            page.goto(f"https://www.sec.gov{href}", timeout=60000)
-            print("✅ Navigated to Annual Report page.")
+                # Use get_attribute — it's fine in sync mode as long as context is alive
+                href = doc_link.get_attribute('href')
 
-        except Exception as e:
-            browser.close()
-            return f"❌ Failed to locate or click 'Annual report': {e}"
+                if href:
+                    full_url = f"https://www.sec.gov{href}"
+                    print(f"✅ Navigating to 10-K report: {full_url}")
+                    page.goto(full_url, timeout=60000)
+                    page.wait_for_timeout(5000)
+                else:
+                    print("❌ Document link exists but has no href.")
+            except Exception as e:
+                print(f"❌ Error while clicking document link: {e}")
+
 
 
 

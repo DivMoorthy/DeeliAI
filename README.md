@@ -4,10 +4,10 @@ company's financial statistics and then calculate an investment score (1 being p
 Some features include:
 1. A 6-bucket metric system (individual functions) with 3 qualitative and 3 quantitative metrics. Each function currently evalautes one value (ex: size and valuation currently
    evaluates only TAM, however every function can be scaled to 3-4 submetrics each as planned in the linked metric spreadsheet below)
-   Fully developed metrics plan:
+   Fully developed metrics plan: https://docs.google.com/spreadsheets/d/181XVMJgEUIjcpRgn1FoFlrMwOLjWbIkN/edit?usp=sharing&ouid=115915866111961084415&rtpof=true&sd=true
 2. There is an error-handling function that has a default value autofill utilizing an API call to Gemini and previosuly evauluated companies that share similar data as a benchmark
 3. When web-scraping for sources, there is a proximity based heirarchy for the credibility of a source: prioritizing direct data from financial documents such as 10k's and SEC filings,
-   then evaluaiting analyst reports, and finally refering to 3rd party sources as a final resort before default-autofilling. Full plans for botht he erorr-handling and source-ranking
+   then evaluaiting analyst reports, and finally refering to 3rd party sources as a final resort before default-autofilling. Full plans for both he erorr-handling and source-ranking
    can be found here in a visual representation: https://www.figma.com/design/LiCbRnJEKJR7WNMhqg1VFc/Deeli-Market-Metric-Design?node-id=38-245&t=RnFuVy9OYBVTSkBE-1
    
 

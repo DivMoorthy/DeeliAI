@@ -74,7 +74,7 @@ class Documents:
                 page.wait_for_selector('a.document-link', timeout=5000)
 
                 # Grab the first matching link safely
-                doc_link = page.locator('a.document-link').first
+                doc_link = page.locator('a.document-link:has-text("Annual report [Section 13 and 15(d), not S-K Item 405]")').first
 
                 # Use get_attribute — it's fine in sync mode as long as context is alive
                 href = doc_link.get_attribute('href')
@@ -84,39 +84,8 @@ class Documents:
                     print(f"✅ Navigating to 10-K report: {full_url}")
                     page.goto(full_url, timeout=60000)
                     page.wait_for_timeout(5000)
-                else:
-                    print("❌ Document link exists but has no href.")
-            except Exception as e:
-                print(f"❌ Error while clicking document link: {e}")
 
-
-
-
-
-
-
-
-
-"""
-        try:
-            # Click the first "Annual report" link
-            annual_report_link = page.locator('a:has-text("Annual report")').first
-            annual_report_link.wait_for(timeout=5000)
-            annual_report_href = annual_report_link.get_attribute('href')
-
-            if not annual_report_href:
-                result = "❌ No 'Annual report' link found."
-            else:
-                # Navigate to the Annual Report page
-                if not annual_report_href.startswith("https://"):
-                    annual_report_href = "https://www.sec.gov" + annual_report_href
-
-                print(f"🔗 Navigating to Annual Report: {annual_report_href}")
-                page.goto(annual_report_href)
-                page.wait_for_load_state("networkidle")
-                Documents.dismiss_popups(page)
-
-                # Save full HTML content of the page
+ # Save full HTML content of the page
                 html_content = page.content()
                 safe_cik = re.sub(r'\\W+', '_', cik_padded)
                 filename = os.path.join(download_folder, f"{safe_cik}_annual_report.html")
@@ -126,15 +95,9 @@ class Documents:
                 print(f"✅ Saved HTML content to {filename}")
                 result = f"✅ HTML content saved to {filename}"
 
-        except Exception as e:
-            print(f"❌ Error downloading Annual Report content: {e}")
-            result = f"❌ Error downloading Annual Report content: {e}"
 
-        finally:
-            try:
-                browser.close()
-            except Exception:
-                pass  # Avoid crashing if already closed
+            except Exception as e:
+                print(f"❌ Error downloading Annual Report content: {e}")
+                result = f"❌ Error downloading Annual Report content: {e}"
 
             return result
-"""

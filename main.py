@@ -35,14 +35,12 @@ class Main(API):
     
 
     # perform a similar search for the singular missing metric on a company with a similar profile 
-    def defaultValQual(self, metric):
-        name = self.ask_LLM(
-            f"Based on publically available data, what is a company in the " + {self.industry} + " with a valuation around " + {self.valuation} + " that would have a similar " + {metric} + " to " + {self.name} + " based on similar size, data and characteristic milestones?"
+    def defaultValQuant(self, metric):
+        val = self.ask_LLM(
+            f"Based on publically available data, what is a company in the " + {self.industry} + " with a valuation around " + {self.valuation} + " that would have a similar " + {metric} + " to " + {self.name} + " based on similar size, data and characteristic milestones, and what is their + {metric}?"
         )
         
-        compCIK = self.askLLM( f"What is the CIK for " + {name} + " ?")
-
-        Documents.getReport(compCIK)
+        return val
 
         #main call for whichever metric here 
     
@@ -78,19 +76,24 @@ class Main(API):
         newPrompt = f"Using financial analyst data, how many competitors on average does the company {self.name} have in the specific industry {self.industry}"
         activeComps = self.ask_LLM(newPrompt + " formatted as an integer value less than 5 tokens")
 
-        if not isinstance(activeComps, int):
-            activeComps = self.defaultVal("Active Competitors")
+        comps = int(activeComps)
+
+        if not isinstance(comps, int):
+            comps = self.defaultValQual("Regulatory Constraints")
         
-        return Main.getComp(activeComps)
+        return Metric.getComp(comps)
 
     def marketOpen(self):
-        newPrompt = f"Using government and Wall Street data, how many prominent regulatory constraints does a startup in the {self.industry} face?"
-        regConst = self.ask_LLM(newPrompt + " formatted as an integer value less than 5 tokens and evaluate regulatory investment confidence from a numeric scale: 1 = Heavily regulated, 2 = Moderately regulated, 3 = Lightly regulated, 4 = Unregulated / gray area, 5 = Actively deregulated / tailwind")
+        newPrompt = f"Using government and Wall Street data, evaluate the prominent regulatory constraints the {self.industry} faces "
+        regConst = self.ask_LLM(newPrompt + " and rate the market openess as a number from 1 to 5 where 1 = Heavily regulated, 2 = Moderately regulated, 3 = Lightly regulated, 4 = Unregulated / gray area, 5 = Actively deregulated / tailwind, return one singular number value less thqan 5 tokens")
 
-        if not isinstance(regConst, int):
-            regConst = self.defaultVal("Regulatory Constraints")
+    
+        consts = int(regConst)
 
-        return Main.getRegConst(regConst)
+        if not isinstance(consts, int):
+            consts = self.defaultValQual("Regulatory Constraints")
+            
+        return Metric.getRegConst(consts)
 
         
 
@@ -98,8 +101,9 @@ class Main(API):
         newPrompt = f"Using social media, ads, and general visibility, how much brand visibility does {self.name} have on a scale of 1-10 (10 being highest)?"
         brandVisb = self.ask_LLM(newPrompt + " formatted as an integer value less than 5 tokens")
 
-        if not isinstance(brandVisb, int):
-            brandVisb = self.defaultVal("Brand Visibility")
+        brandVisb = int(brandVisb)
+        if not int:
+            brandVisb = self.defaultValQual("Brand Visibility")
         
         return brandVisb
     
@@ -121,6 +125,9 @@ class Main(API):
         comp_score = self.compLand()
         reg_score = self.marketOpen()
         brand_score = self.intangibles()
+
+        
+      
 
         # Weights for each metric — can be tuned based on priority
         weights = {
@@ -144,3 +151,4 @@ class Main(API):
         final = round(total_score, 2)
         print(f"\n Final Investment Confidence Score: {final}/10")
         return final
+  

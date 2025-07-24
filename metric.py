@@ -64,25 +64,25 @@ class Metric:
         else:
             score = 3
         return score
-    
-def getRegConst(regulation_level: int) -> int:
-    """
-    Evaluate regulatory investment confidence from a numeric scale:
-    1 = Heavily regulated
-    2 = Moderately regulated
-    3 = Lightly regulated
-    4 = Unregulated / gray area
-    5 = Actively deregulated / tailwind
-    """
-    if regulation_level == 1:
-        return 2
-    elif regulation_level == 2:
-        return 5
-    elif regulation_level == 3:
-        return 8
-    elif regulation_level == 4:
-        return 6
-    elif regulation_level == 5:
-        return 9
-    else:
-        return 5  # default neutral score if input is unexpected
+        
+    def getRegConst(regulation_level: int) -> int:
+        """
+        Evaluate regulatory investment confidence from a numeric scale:
+        1 = Heavily regulated
+        2 = Moderately regulated
+        3 = Lightly regulated
+        4 = Unregulated / gray area
+        5 = Actively deregulated / tailwind
+        """
+        if regulation_level == 1:
+            return 2
+        elif regulation_level == 2:
+            return 5
+        elif regulation_level == 3:
+            return 8
+        elif regulation_level == 4:
+            return 6
+        elif regulation_level == 5:
+            return 9
+        else:
+            return 5  # default neutral score if input is unexpected

@@ -1,6 +1,6 @@
 from main import Main  
 from dox import Documents
-
+from getData import Data
 
 #*******cik = Main.getCIK("NVDA")
 
@@ -20,7 +20,7 @@ client = Main("NVDA", "semiconductors", "100B")
 #print(Main.intangibles(client))
 #all qual metrics tested and working
 
-
+Data.search_edgar_10k_viewer(resultLink, "EBIT")
 
 
 # calls all 6 metric functions

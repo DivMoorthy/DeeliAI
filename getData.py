@@ -1,48 +1,54 @@
 from playwright.sync_api import sync_playwright
 import os
 import re
+import time
 
 
 class Data:
     @staticmethod
     def search_edgar_10k_viewer(url: str, keyword: str) -> str:
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=False, slow_mo=100)  # slow_mo for visibility
+            browser = p.chromium.launch(headless=False, slow_mo=75)
             page = browser.new_page()
-
             try:
-                print("🔍 Navigating to page...")
+                print("🌐 Navigating to SEC iXBRL viewer...")
                 page.goto(url, timeout=60000)
                 page.wait_for_load_state("networkidle")
 
-                # Wait for the input box to be visible
-                search_input = page.locator('input#global-search')
-                search_input.wait_for(timeout=15000)
-                print("✅ Found search box")
+                # Wait for iframe to be attached and loaded
+                page.wait_for_selector('iframe#ixvFrame', timeout=15000)
+                iframe = page.frame(name="ixvFrame")
+                if not iframe:
+                    raise Exception("❌ Unable to access iframe named 'ixvFrame'")
 
-                # Click, type the keyword, and press Enter
+                print("✅ Accessed iframe 'ixvFrame'.")
+
+                # Locate input using placeholder text
+                search_input = iframe.locator('input[placeholder="Search Facts"]')
+                search_input.wait_for(timeout=10000)
+                print("✅ Located 'Search Facts' input.")
+
+                # Click and type keyword slowly
                 search_input.click()
-                search_input.fill(keyword)
-                search_input.press('Enter')
+                for char in keyword:
+                    search_input.type(char)
+                    time.sleep(0.15)
 
-                print(f"⌨️ Typed keyword: {keyword}")
+                search_input.press("Enter")
+                print(f"⌨️ Typed '{keyword}' and pressed Enter.")
 
-                # Wait for highlights or search results to appear
-                # In the iXBRL viewer, search results often trigger fact highlights
-                # We'll wait a bit or look for something like .searchhit or a highlight
-                time.sleep(5)  # Let the highlights render
+                # Wait for dropdown list
+                dropdown_items = iframe.locator('div.autocomplete-list div')
+                dropdown_items.first.wait_for(timeout=5000)
 
-                # Optional: capture a screenshot to verify
-                page.screenshot(path="search_result.png")
-                print("📸 Screenshot saved")
-
-                # Keep browser open for manual inspection if needed
-                print("⏳ Done — manually close the browser window to finish.")
-                input("Press Enter to close the browser...")
-
-                return "✅ Search completed."
+                first_result = dropdown_items.first.inner_text()
+                print(f"🔎 First dropdown result: {first_result}")
+                return first_result
 
             except Exception as e:
-                return f"❌ Error during search: {e}"
+                print(f"❌ Error: {e}")
+                return None
+
             finally:
+                input("Press Enter to close the browser...")
                 browser.close()

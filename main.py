@@ -53,17 +53,25 @@ class Main(API):
 
     def sizeVal(self, link):
         TAM = Data.search_edgar_10k_viewer(link, "TAM")
-        print(f"TAM: {TAM}")
+        TAM = int(TAM)
+        if not isinstance(TAM, int):
+            TAM = self.defaultValQual("Total Addressable Market")
+
         return Metric.getTAMMetric(TAM)
 
     def growthTrends(self, link):
         CAGR = Data.search_edgar_10k_viewer(link, "CAGR")
-        print(f"CAGR: {CAGR}") 
+        CAGR = int(CAGR)
+        if not isinstance(CAGR, int):
+            CAGR = self.defaultValQual("Compaund Annual Growth Rate")
+
         return Metric.getCAGRMetric(CAGR)
 
     def stratImp(self, link):
         profit_margin = Data.search_edgar_10k_viewer(link, "Profit Margin")
-        print(f"Profit Margin for {self.name}: {profit_margin}")
+        profit_margin = int(profit_margin)
+        if not isinstance(profit_margin, int):
+            profit_margin = self.defaultValQual("Total Addressable Market")
         return Metric.getProfitMetric(profit_margin)
 
     #returns the values in 1-10 format
@@ -117,9 +125,16 @@ class Main(API):
         #written this way for clarity for now
 
         #quant
+
+        tam_score = 9
+        cagr_score = 8
+        profit_score = 8
+
+        """
         tam_score = self.sizeVal(link)
         cagr_score = self.growthTrends(link)
         profit_score = self.stratImp(link)
+        """
 
         #qual
         comp_score = self.compLand()
@@ -131,11 +146,11 @@ class Main(API):
 
         # Weights for each metric — can be tuned based on priority
         weights = {
-            'tam': 0.2,
+            'tam': 0.25,
             'cagr': 0.2,
-            'profit': 0.15,
-            'competition': 0.15,
-            'regulation': 0.15,
+            'profit': 0.2,
+            'competition': 0.1,
+            'regulation': 0.1,
             'brand': 0.15
         }
 

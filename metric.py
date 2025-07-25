@@ -3,31 +3,31 @@
 
 class Metric:
     @staticmethod
-    def getTAMMetric(tam_in_billions):
-        if tam_in_billions < 0.5:
+    def getEPSMetric(EPS_AVG):
+        if EPS_AVG < 0.1:
             score = 1
-        elif tam_in_billions < 1:
+        elif EPS_AVG < 0.25:
             score = 3
-        elif tam_in_billions < 5:
+        elif EPS_AVG < 0.5:
             score = 5
-        elif tam_in_billions < 10:
+        elif EPS_AVG < 1:
             score = 7
-        elif tam_in_billions < 50:
+        elif EPS_AVG < 2:
             score = 9
         else:
             score = 10
         return score
 
-    def getCAGRMetric(cagr_percent):
-        if cagr_percent < 2:
+    def getRDMetric(rd_exp):
+        if rd_exp < 1000:
             score = 1
-        elif cagr_percent < 5:
+        elif rd_exp < 10000:
             score = 3
-        elif cagr_percent < 10:
+        elif rd_exp < 1000000:
             score = 5
-        elif cagr_percent < 20:
+        elif rd_exp < 10000000:
             score = 7
-        elif cagr_percent < 35:
+        elif rd_exp < 1000000000:
             score = 9
         else:
             score = 10

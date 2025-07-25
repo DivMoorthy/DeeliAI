@@ -20,7 +20,8 @@ client = Main("NVDA", "semiconductors", "100B")
 #print(Main.intangibles(client))
 #all qual metrics tested and working
 
-Data.search_edgar_10k_viewer(resultLink, "profit")
+#print(Main.sizeVal(client, resultLink))
+# all quant metrics tested and working
 
 
 # calls all 6 metric functions

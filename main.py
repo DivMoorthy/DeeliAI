@@ -51,27 +51,29 @@ class Main(API):
     #utilize the playwright API
 
 
-    def sizeVal(self, link):
-        TAM = Data.search_edgar_10k_viewer(link, "TAM")
-        TAM = int(TAM)
-        if not isinstance(TAM, int):
-            TAM = self.defaultValQual("Total Addressable Market")
+    def sizeVal(self, link): #eps is earnings per share
+        EPS = Data.search_edgar_10k_viewer(link, "Earnings per share")
+        EPS = float(EPS)
+        if not isinstance(EPS, float):
+            EPS = self.defaultValQual("Earnings per share")
 
-        return Metric.getTAMMetric(TAM)
+        return Metric.getEPSMetric(EPS)
 
     def growthTrends(self, link):
-        CAGR = Data.search_edgar_10k_viewer(link, "CAGR")
-        CAGR = int(CAGR)
-        if not isinstance(CAGR, int):
-            CAGR = self.defaultValQual("Compaund Annual Growth Rate")
+        RD = Data.search_edgar_10k_viewer(link, "Research and Development")
+        RD = int(RD.replace(',', ''))
+        RD = int(RD)
+        if not isinstance(RD, int):
+            RD = self.defaultValQual("Research and Development")
 
-        return Metric.getCAGRMetric(CAGR)
+        return Metric.getRDMetric(RD)
 
     def stratImp(self, link):
-        profit_margin = Data.search_edgar_10k_viewer(link, "Profit Margin")
+        profit_margin = Data.search_edgar_10k_viewer(link, "Gross Profit")
+        profit_margin = int(profit_margin.replace(',', ''))
         profit_margin = int(profit_margin)
         if not isinstance(profit_margin, int):
-            profit_margin = self.defaultValQual("Total Addressable Market")
+            profit_margin = self.defaultValQual("Gross Profit")
         return Metric.getProfitMetric(profit_margin)
 
     #returns the values in 1-10 format

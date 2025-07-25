@@ -37,18 +37,23 @@ class Data:
                 search_input.press("Enter")
                 print(f"⌨️ Typed '{keyword}' and pressed Enter.")
 
-                # Wait for dropdown list
-                dropdown_items = iframe.locator('div.autocomplete-list div')
-                dropdown_items.first.wait_for(timeout=5000)
+                # Wait for fact list items to appear in the sidebar
+                iframe.wait_for_selector('a.list-group-item', timeout=5000)
 
-                first_result = dropdown_items.first.inner_text()
-                print(f"🔎 First dropdown result: {first_result}")
-                return first_result
+                # Locate the first result item
+                first_fact = iframe.locator('a.list-group-item').first
 
+                # Wait for it to be ready
+                first_fact.wait_for(timeout=5000)
+
+                # Extract the numeric value
+                numeric_value = first_fact.locator('[data-cy="factVal"]').inner_text()
+
+                print(f"🔢 First fact value: {numeric_value}")
+                return numeric_value
+            
             except Exception as e:
-                print(f"❌ Error: {e}")
-                return None
+                return {"error": f"❌ Error: {str(e)}"}
 
             finally:
-                input("Press Enter to close the browser...")
                 browser.close()

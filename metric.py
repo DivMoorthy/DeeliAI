@@ -97,37 +97,70 @@ class Metric:
         else:
             return 10
 
-    def getProfitMetric(margin_percent):
-        if margin_percent < 0:
-            score = 1
-        elif margin_percent < 5:
-            score = 3
-        elif margin_percent < 15:
-            score = 5
-        elif margin_percent < 25:
-            score = 7
-        elif margin_percent < 40:
-            score = 9
-        else:
-            score = 10
-        return score
+    def getStratMetric(profit_margin, CE, RFIR, valuation):
+        """
+        Calculates a 1-10 strategic importance score.
 
-    #rankings for the qualitative metrics using bin-style evaluations as well
+        profit_margin: company profit margin as a decimal (e.g., 0.25 for 25%)
+        CE: cash and cash equivalents (absolute value)
+        RFIR: risk-free interest rate as a decimal (e.g., 0.04 for 4%)
+        valuation: market capitalization (absolute value)
+
+        Returns an integer score from 1 to 10.
+        """
+        if valuation <= 0 or RFIR <= 0:
+            return 1  # fallback on invalid input
+
+        w1, w2 = 0.6, 0.4  # weights for profit margin and cash adjusted by RFIR
+
+        # Normalize profit margin by weighting directly (already a ratio)
+        pm_score = profit_margin * w1
+
+        # Cash adjusted by valuation and RFIR
+        cash_score = (CE / valuation) * (1 / RFIR) * w2
+
+        # Composite strategic importance score
+        sis = pm_score + cash_score
+
+        # Bin into 1-10 scale
+        if sis < 0.02:
+            return 1
+        elif sis < 0.04:
+            return 2
+        elif sis < 0.06:
+            return 3
+        elif sis < 0.08:
+            return 4
+        elif sis < 0.1:
+            return 5
+        elif sis < 0.12:
+            return 6
+        elif sis < 0.15:
+            return 7
+        elif sis < 0.18:
+            return 8
+        elif sis < 0.22:
+            return 9
+        else:
+            return 10
+            
+
+        #rankings for the qualitative metrics using bin-style evaluations as well
 
     def getComp(num_competitors):
-        if num_competitors == 0:
-            score = 2
-        elif num_competitors <= 2:
-            score = 4
-        elif num_competitors <= 5:
-            score = 6
-        elif num_competitors <= 15:
-            score = 8
-        elif num_competitors <= 30:
-            score = 6
-        else:
-            score = 3
-        return score
+            if num_competitors == 0:
+                score = 2
+            elif num_competitors <= 2:
+                score = 4
+            elif num_competitors <= 5:
+                score = 6
+            elif num_competitors <= 15:
+                score = 8
+            elif num_competitors <= 30:
+                score = 6
+            else:
+                score = 3
+            return score
         
     def getRegConst(regulation_level: int) -> int:
         """

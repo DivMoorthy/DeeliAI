@@ -7,7 +7,7 @@ class Main(API):
     def __init__(self, name, industry, valuation):
         self.name = name
         self.industry = industry
-        self.valuation = valuation
+        self.valuation = int(valuation)
 
 
  #unique company number that they file under with the SEC
@@ -63,6 +63,7 @@ class Main(API):
         MDA = int(MDA)
         if not isinstance(MDA, int):
             MDA = self.defaultValQual("MD&A")
+            
 
         CL = Data.search_edgar_10k_viewer(link, "customer liability")
         CL = int(CL.replace(',', ''))
@@ -100,7 +101,24 @@ class Main(API):
         profit_margin = int(profit_margin)
         if not isinstance(profit_margin, int):
             profit_margin = self.defaultValQual("Gross Profit")
-        return Metric.getProfitMetric(profit_margin)
+
+        CE = Data.search_edgar_10k_viewer(link, "Cash and equivalents")
+        CE = int(CE.replace(',', ''))
+        CE = int(CE)
+        if not isinstance(CE, int):
+            CE = self.defaultValQual("Cash and equivalents")
+        
+        RFIR = Data.search_edgar_10k_viewer(link, "risk free interest rate")
+        RFIR = int(RFIR.replace(',', ''))
+        RFIR = int(RFIR)
+        if not isinstance(RFIR, int):
+            RFIR = self.defaultValQual("risk free interest rate")
+
+        
+            
+        return Metric.getStratMetric(profit_margin, CE, RFIR, self.valuation)
+    
+
 
     #returns the values in 1-10 format
 

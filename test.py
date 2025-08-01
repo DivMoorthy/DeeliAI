@@ -16,7 +16,7 @@ resultLink = "https://www.sec.gov/ix?doc=/Archives/edgar/data/0001045810/0001045
 
 client = Main("NVDA", "semiconductors", "100B")
 
-#Main.finalScore(client, resultLink)
+print(Main.finalScore(client, resultLink))
 #print(Main.intangibles(client))
 #all qual metrics tested and working
 

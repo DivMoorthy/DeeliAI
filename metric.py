@@ -3,20 +3,55 @@
 
 class Metric:
     @staticmethod
-    def getEPSMetric(EPS_AVG):
-        if EPS_AVG < 0.1:
+    def getSZMetric(EPS, MDA, CL, valuation):
+
+        # calculation formula is [EPS x (1 + CL/MC)] / [LTD/MC + c]
+        #logic:
+        # High EPS implies profitability and value to shareholders.
+        # Higher CL/MC is good because it reflects prepaid demand or strong customer commitment.
+        # Higher LTD/MC is negative, showing increased leverage risk.
+        # So the FSP Ratio rewards profitability and demand while penalizing debt.
+        """
+        EPS: Earnings per Share
+        MDA: Long-Term Debt (excluding current maturities)
+        CL: Customer Liabilities
+        valuation: Market Capitalization
+        
+        Returns: Integer score from 1 to 10
+        """
+        
+        epsilon = 1e-6  # avoid division by zero
+
+        if valuation <= 0:
+            return 1  # default to worst score if valuation invalid
+
+        # Calculate FSP ratio
+        fsp = (EPS * (1 + (CL / valuation))) / ((MDA / valuation) + epsilon)
+
+        # Bin FSP ratio into score from 1 to 10
+        if fsp < 1:
             score = 1
-        elif EPS_AVG < 0.25:
+        elif fsp < 2:
+            score = 2
+        elif fsp < 4:
             score = 3
-        elif EPS_AVG < 0.5:
+        elif fsp < 7:
+            score = 4
+        elif fsp < 12:
             score = 5
-        elif EPS_AVG < 1:
+        elif fsp < 20:
+            score = 6
+        elif fsp < 35:
             score = 7
-        elif EPS_AVG < 2:
+        elif fsp < 60:
+            score = 8
+        elif fsp < 100:
             score = 9
         else:
             score = 10
+
         return score
+
 
     def getRDMetric(rd_exp):
         if rd_exp < 1000:

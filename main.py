@@ -52,12 +52,23 @@ class Main(API):
 
 
     def sizeVal(self, link): #eps is earnings per share
+        # function used to fetch data to evaluate market size and value
         EPS = Data.search_edgar_10k_viewer(link, "Earnings per share")
         EPS = float(EPS)
         if not isinstance(EPS, float):
             EPS = self.defaultValQual("Earnings per share")
+        
+        MDA = Data.search_edgar_10k_viewer(link, "MD&A")
+        MDA = float(MDA)
+        if not isinstance(MDA, float):
+            MDA = self.defaultValQual("MD&A")
 
-        return Metric.getEPSMetric(EPS)
+        CL = Data.search_edgar_10k_viewer(link, "customer liability")
+        CL = float(CL)
+        if not isinstance(CL, float):
+            CL = self.defaultValQual("customer liability")
+
+        return Metric.getSZMetric(EPS, MDA, CL, self.valuation)
 
     def growthTrends(self, link):
         RD = Data.search_edgar_10k_viewer(link, "Research and Development")
@@ -127,16 +138,11 @@ class Main(API):
         #written this way for clarity for now
 
         #quant
-
-        tam_score = 9
-        cagr_score = 8
-        profit_score = 8
-
-        """
-        tam_score = self.sizeVal(link)
+    
+        SV_score = self.sizeVal(link)
         cagr_score = self.growthTrends(link)
         profit_score = self.stratImp(link)
-        """
+        
 
         #qual
         comp_score = self.compLand()
@@ -148,7 +154,7 @@ class Main(API):
 
         # Weights for each metric — can be tuned based on priority
         weights = {
-            'tam': 0.25,
+            'SV': 0.25,   # SV = size and valuation
             'cagr': 0.2,
             'profit': 0.2,
             'competition': 0.1,
@@ -157,7 +163,7 @@ class Main(API):
         }
 
         total_score = (
-            tam_score * weights['tam'] +
+            SV_score * weights['SV'] +
             cagr_score * weights['cagr'] +
             profit_score * weights['profit'] +
             comp_score * weights['competition'] +

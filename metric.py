@@ -53,20 +53,49 @@ class Metric:
         return score
 
 
-    def getRDMetric(rd_exp):
-        if rd_exp < 1000:
-            score = 1
-        elif rd_exp < 10000:
-            score = 3
-        elif rd_exp < 1000000:
-            score = 5
-        elif rd_exp < 10000000:
-            score = 7
-        elif rd_exp < 1000000000:
-            score = 9
+    def getGTMetric(RD, OI, II, valuation):
+        """
+        Returns a score from 1 to 10 that estimates company growth strength.
+        
+        RD = Research and Development expenses
+        OI = Operating Income
+        II = Investment Income
+        valuation = Market Capitalization (in same units as above)
+
+        All values should be in consistent currency (e.g., USD).
+        """
+        if valuation <= 0:
+            return 1  # default to lowest score on invalid valuation
+
+        # Normalize and weight each component
+        w1, w2, w3 = 0.4, 0.5, 0.1
+        gtr = (
+            (RD / valuation) * w1 +
+            (OI / valuation) * w2 +
+            (II / valuation) * w3
+        )
+
+        # Scale GTR and bin into scores
+        if gtr < 0.001:
+            return 1
+        elif gtr < 0.002:
+            return 2
+        elif gtr < 0.004:
+            return 3
+        elif gtr < 0.007:
+            return 4
+        elif gtr < 0.012:
+            return 5
+        elif gtr < 0.020:
+            return 6
+        elif gtr < 0.035:
+            return 7
+        elif gtr < 0.060:
+            return 8
+        elif gtr < 0.1:
+            return 9
         else:
-            score = 10
-        return score
+            return 10
 
     def getProfitMetric(margin_percent):
         if margin_percent < 0:

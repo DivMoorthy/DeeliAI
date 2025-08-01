@@ -59,13 +59,15 @@ class Main(API):
             EPS = self.defaultValQual("Earnings per share")
         
         MDA = Data.search_edgar_10k_viewer(link, "MD&A")
-        MDA = float(MDA)
-        if not isinstance(MDA, float):
+        MDA = int(MDA.replace(',', ''))
+        MDA = int(MDA)
+        if not isinstance(MDA, int):
             MDA = self.defaultValQual("MD&A")
 
         CL = Data.search_edgar_10k_viewer(link, "customer liability")
-        CL = float(CL)
-        if not isinstance(CL, float):
+        CL = int(CL.replace(',', ''))
+        CL = int(CL)
+        if not isinstance(CL, int):
             CL = self.defaultValQual("customer liability")
 
         return Metric.getSZMetric(EPS, MDA, CL, self.valuation)
@@ -77,7 +79,20 @@ class Main(API):
         if not isinstance(RD, int):
             RD = self.defaultValQual("Research and Development")
 
-        return Metric.getRDMetric(RD)
+        OI = Data.search_edgar_10k_viewer(link, "Operating Income")
+        OI = int(OI.replace(',', ''))
+        OI = int(OI)
+        if not isinstance(OI, int):
+            OI = self.defaultValQual("Operating Income")
+        
+        II = Data.search_edgar_10k_viewer(link, "Investment Income")
+        II = int(II.replace(',', ''))
+        II = int(II)
+        if not isinstance(II, int):
+            OI = self.defaultValQual("Investment Income")
+        
+
+        return Metric.getGTMetric(RD, OI, II, self.valuation)
 
     def stratImp(self, link):
         profit_margin = Data.search_edgar_10k_viewer(link, "Gross Profit")

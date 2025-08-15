@@ -1,6 +1,7 @@
 from main import Main  
 from dox import Documents
 from getData import Data
+from yfinance import Yahoo
 
 #*******cik = Main.getCIK("NVDA")
 
@@ -10,13 +11,13 @@ from getData import Data
 
 #*******resultLink = Documents.getReport(cik, headless=False)
 
-resultLink = "https://www.sec.gov/ix?doc=/Archives/edgar/data/0001045810/000104581025000023/nvda-20250126.htm"
+#resultLink = "https://www.sec.gov/ix?doc=/Archives/edgar/data/0001045810/000104581025000023/nvda-20250126.htm"
 #print(resultLink)
 #tested and working as well 
 
-client = Main("NVDA", "semiconductors", "100B")
+#client = Main("NVDA", "semiconductors", "100B")
 
-print(Main.finalScore(client, resultLink))
+#print(Main.finalScore(client, resultLink))
 #print(Main.intangibles(client))
 #all qual metrics tested and working
 
@@ -31,3 +32,5 @@ print(Main.finalScore(client, resultLink))
    
 
 
+
+print(Yahoo.get_eps("NVDA"))
